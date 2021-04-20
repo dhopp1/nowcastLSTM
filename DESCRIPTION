@@ -1,0 +1,16 @@
+Package: nowcastDFM
+Title: LSTMs for Nowcasting
+Version: 0.0.0.0000
+Authors@R: c(
+	person("Daniel", "Hopp", email = "daniel.hopp@un.org", role = c("aut", "cre"))
+	)
+Description: Run LSTM models in R 
+Depends: 
+	R (>= 3.3.0),
+	dplyr (>= 0.8.0.1),
+	stringr (>= 1.4.0),
+	reticulate (>= 1.18)
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1

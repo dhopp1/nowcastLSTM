@@ -24,7 +24,7 @@ install_python_libraries()
 `install_python_libraries()` will install the necessary packages to the default Python installation. If you would like to install them to an environment/a different Python installation, install the following libraries as appropriate for your environment manager.
 
 ```
-pip install dill numpy pandas pmpdarima torch nowcast-lstm
+pip install dill numpy pandas pmdarima torch nowcast-lstm
 ```
 
 ## Background

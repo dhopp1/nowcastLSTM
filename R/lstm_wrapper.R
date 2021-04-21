@@ -8,7 +8,7 @@
 #' @export
 
 install_python_libraries <- function () {
-  system("pip install dill numpy pandas pmpdarima torch nowcast-lstm")
+  system("pip install dill numpy pandas pmdarima torch nowcast-lstm")
 }
 
 

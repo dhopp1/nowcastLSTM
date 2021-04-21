@@ -2,15 +2,6 @@
 #' @import stringr
 #' @import reticulate
 
-#' @title Install required Python libraries
-#' @description Installs required Python libraries. If this fails, install `pandas`, `numpy`, `pmdarima`, `dill`, `torch` and `nowcast-lstm` manually from the command line with pip
-#'
-#' @export
-
-install_python_libraries <- function () {
-  system("pip install dill numpy pandas pmdarima torch nowcast-lstm")
-}
-
 
 #' @title Initialize Python libraries
 #' @param python_path string, location of Python. If left empty, uses default.

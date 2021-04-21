@@ -4,7 +4,10 @@
 \alias{initialize_session}
 \title{Initialize Python libraries}
 \usage{
-initialize_session()
+initialize_session(python_path = "")
+}
+\arguments{
+\item{python_path}{string, location of Python. If left empty, uses default.}
 }
 \description{
 Initializes Python libraries for the session

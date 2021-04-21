@@ -20,10 +20,11 @@ initialize_session(python_path = "path_to_/python")
 # this function only needs to be run once, to get necessary python libraries installed on your system
 install_python_libraries()
 ```
-If the `install_python_libraries()` function doesn't work for you, then install necessary Python libraries manually from the command line with the command below. More information on installing Python libraries with pip available [here](https://packaging.python.org/tutorials/installing-packages/).
+
+`install_python_libraries()` will install the necessary packages to the default Python installation. If you would like to install them to an environment/a different Python installation, install the following libraries as appropriate for your environment manager.
 
 ```
-pip install dill numpy pandas torch nowcast-lstm
+pip install dill numpy pandas pmpdarima torch nowcast-lstm
 ```
 
 ## Background

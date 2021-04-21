@@ -8,21 +8,20 @@
 #' @export
 
 install_python_libraries <- function () {
-  py_install("pandas", pip = TRUE)
-  py_install("numpy", pip = TRUE)
-  py_install("pmdarima", pip = TRUE)
-  py_install("dill", pip = TRUE)
-  py_install("torch", pip = TRUE)
-  py_install("nowcast-lstm", pip = TRUE)
+  system("pip install dill numpy pandas pmpdarima torch nowcast-lstm")
 }
 
 
 #' @title Initialize Python libraries
+#' @param python_path string, location of Python. If left empty, uses default.
 #' @description Initializes Python libraries for the session
 #'
 #' @export
 
-initialize_session <- function () {
+initialize_session <- function (python_path = "") {
+  if (python_path != "") {
+    use_python(python_path)
+  }
   py_run_string("from nowcast_lstm.LSTM import LSTM")
   py_run_string("import pandas as pd")
   py_run_string("import numpy as np")

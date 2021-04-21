@@ -6,7 +6,7 @@ Authors@R: c(
 	)
 Description: Run LSTM models in R 
 Depends: 
-	R (>= 3.6.3),
+	R (>= 3.6.1),
 	dplyr (>= 0.8.0.1),
 	stringr (>= 1.4.0),
 	reticulate (>= 1.18)

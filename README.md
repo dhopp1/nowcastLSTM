@@ -6,7 +6,7 @@ R wrapper for [nowcast_lstm](https://github.com/dhopp1/nowcast_lstm) Python libr
 <br><br>
 **Installing the library**: Install devtools with `install.packages("devtools")`. Then, from R, run: `devtools::install_github("dhopp1/nowcastLSTM")`. If you get errors about packages being built on different versions of R, try running `Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")`, then run the install command again.
 <br><br>
-**Example**: `nowcast_lstm_example.zip` contains an R Markdown file with a dataset and more detailed example of usage in R.
+**Example**: `nowcastLSTM_example.zip` contains an R Markdown file with a dataset and more detailed example of usage in R.
 
 ## Set up
 To get Python and R working together, first make sure the following 6 Python libraries are installed, you can use pip for this by running the following from the command line, one after the other. If this isn't working, follow [this](https://packaging.python.org/tutorials/installing-packages/) guide for help. More info on getting pytorch specifically installed is available [here](https://pytorch.org/).

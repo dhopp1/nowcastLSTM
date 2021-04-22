@@ -206,5 +206,11 @@ gen_news <- function (model, target_period, old_data, new_data) {
   format_dataframe(old_data, "news_old")
   format_dataframe(new_data, "news_new")
   news <- model$gen_news(target_period, news_old, news_new)
-  return (news)
+  r_news <- list()
+  r_news[["news"]] <- py_to_r(news$news)
+  r_news[["old_pred"]] <- news$old_pred
+  r_news[["new_pred"]] <- news$new_pred
+  r_news[["holdout_discrepency"]] <- news$holdout_discrepency
+  
+  return (r_news)
 }

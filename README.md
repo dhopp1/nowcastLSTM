@@ -31,7 +31,10 @@ Once all Python libraries are installed, run the `initialize_session` function i
 library(nowcastLSTM)
 
 # this function should be run at the beginning of every session. Python path can be left empty to use the system default
-initialize_session(python_path = "path_to_/python")
+initialize_session(python_path = "path_to/python")
+
+# use this to set Python location permanently
+Sys.setenv(RETICULATE_PYTHON = "path_to/python")
 ```
 
 ## Background
@@ -47,10 +50,11 @@ Given `data` = a dataframe with a date column + monthly data + a quarterly targe
 
 ```R
 library(nowcastDFM)
+initialize_session()
 
 # this command will instantiate and train an LSTM network
 # due to quirks with using Python from R, the python_model_name argument should be set to the same name used for the R object it is assigned to.
-model = LSTM(data, "target_col_name", n_timesteps=12, python_model_name = "model") # default parameters with 12 timestep history
+model <- LSTM(data, "target_col_name", n_timesteps=12, python_model_name = "model") # default parameters with 12 timestep history
 
 predict(model, data) # predictions on the training set
 
@@ -67,7 +71,7 @@ save_lstm(model, "trained_model.pkl", python_model_name = "model")
 
 # load a previously trained model
 # due to quirks with using Python from R, the python_model_name argument should be set to the same name used for the R object it is assigned to.
-trained_model = load_lstm("trained_model.pkl", python_model_name = "trained_model")
+trained_model <- load_lstm("trained_model.pkl", python_model_name = "trained_model")
 ```
 
 ## LSTM parameters

@@ -3,7 +3,6 @@
 export(LSTM)
 export(gen_news)
 export(initialize_session)
-export(install_python_libraries)
 export(load_lstm)
 export(predict)
 export(ragged_preds)

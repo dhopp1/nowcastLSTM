@@ -43,13 +43,13 @@ format_dataframe <- function (dataframe, df_name = "tmp_df") {
 #' @param n_models integer, number of models to train and take the average of for more robust estimates
 #' @param train_episodes integer, number of epochs/episodes to train the model
 #' @param batch_size integer, number of observations per training batch
-#' @param lr double, learning rate
 #' @param decay double, learning rate decay
 #' @param n_hidden integer, number of hidden states in the network
 #' @param n_layers integer, number of LSTM layers in the network
 #' @param dropout double, dropout rate between the LSTM layers
 #' @param criterion torch loss criterion, defaults to MAE. For E.g. MSE, pass "torch.nn.MSELoss()"
-#' @param optimizer torch optimizer, defaults to Adam
+#' @param optimizer torch optimizer, defaults to Adam. For a different one, pass e.g. "torch.optim.SGD"
+#' @param optimizer_parameters parameters for optimizer, including learning rate. Pass as a named list, e.g. list("lr"=0.01, "weight_decay"=0.001}
 #' @param python_model_name what the model will be called in the python session. Relevant if more than one model is being trained for simultaneous use. For clarity, should be the same as the name of the R object the model is being saved to.
 #' @return trained LSTM model
 #'
@@ -71,6 +71,7 @@ LSTM <-
             dropout = 0,
             criterion = "''",
             optimizer = "''",
+            optimizer_parameters = list("lr"=1e-2),
             python_model_name = "model") {
     format_dataframe(data)
     # NA and ragged edges filling
@@ -86,9 +87,15 @@ LSTM <-
     fill_na_func <- fill_switch(fill_na_func)
     fill_ragged_edges_func <- fill_switch(fill_ragged_edges_func)
     
+    # converting R named list to python Dict
+    list_to_dict <- function (my_list) {
+      return (paste0("{", paste(paste0("'", names(my_list), "':", my_list), collapse=","), "}"))
+    }
+    optimizer_parameters_dict <- list_to_dict(optimizer_parameters)
+    
     py_run_string(
       str_interp(
-	"${python_model_name} = LSTM(data=r.tmp_df, target_variable='${target_variable}', n_timesteps=${n_timesteps}, fill_na_func=${fill_na_func}, fill_ragged_edges_func=${fill_ragged_edges_func}, n_models=${n_models}, train_episodes=${train_episodes}, batch_size=${batch_size}, lr=${lr}, decay=${decay}, n_hidden=${n_hidden}, n_layers=${n_layers}, dropout=${dropout}, criterion=${criterion}, optimizer=${optimizer}, optimizer_parameters={'lr':${lr}}))"
+        "${python_model_name} = LSTM(data=r.tmp_df, target_variable='${target_variable}', n_timesteps=${n_timesteps}, fill_na_func=${fill_na_func}, fill_ragged_edges_func=${fill_ragged_edges_func}, n_models=${n_models}, train_episodes=${train_episodes}, batch_size=${batch_size}, decay=${decay}, n_hidden=${n_hidden}, n_layers=${n_layers}, dropout=${dropout}, criterion=${criterion}, optimizer=${optimizer}, optimizer_parameters=${optimizer_parameters_dict})"
       )
     )
     py_run_string(str_interp("${python_model_name}.train(quiet=True)"))

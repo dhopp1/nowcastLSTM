@@ -2,29 +2,21 @@
 R wrapper for [nowcast_lstm](https://github.com/dhopp1/nowcast_lstm) Python library. Long short-term memory neural networks for economic nowcasting. More background in [this](https://unctad.org/webflyer/economic-nowcasting-long-short-term-memory-artificial-neural-networks-lstm) UNCTAD research paper.
 
 # Installation and set up
-**Installing Python**: Python must be installed on your system for the library to work, however **no Python knowledge is required to use this library**, full functionality can be obtained from R. Follow [this](https://realpython.com/installing-python/) guide to get Python installed on your system. The pip package manager should also have been installed with Python, if not follow [this](https://www.liquidweb.com/kb/install-pip-windows/) guide for installation on Windows, or [this one](https://pip.pypa.io/en/stable/installing/) for other OSs.
-<br><br>
 **Installing the library**: Install devtools with `install.packages("devtools")`. Then, from R, run: `devtools::install_github("dhopp1/nowcastLSTM")`. If you get errors about packages being built on different versions of R, try running `Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")`, then run the install command again.
 <br><br>
+**Installing Python**: If you already have Python installed on your system, simply follow the install instructions from the [nowcast_lstm Python library](https://github.com/dhopp1/nowcast_lstm) and point `initialize_session` to the path where your Python is installed later on.
+<br><br>
+If you don't have Python installed on your system, run the following commands in R once you've run `devtools::install_github("dhopp1/nowcastLSTM")`:
+
+```R
+library(reticulate)
+install_miniconda(path = miniconda_path(), update = TRUE, force = FALSE)
+py_install(conda=miniconda_path(), "dill numpy pandas pmdarima torch nowcast-lstm", pip=TRUE)
+```
+
 **Example**: `nowcastLSTM_example.zip` contains an R Markdown file with a dataset and more detailed example of usage in R.
 
 ## Set up
-To get Python and R working together, first make sure the following 6 Python libraries are installed, you can use pip for this by running the following from the command line, one after the other. If this isn't working, follow [this](https://packaging.python.org/tutorials/installing-packages/) guide for help. More info on getting pytorch specifically installed is available [here](https://pytorch.org/).
-
-```
-# you may have pip3 installed, in which case run "pip3 install..."
-pip install dill numpy pandas pmdarima
-
-# pytorch has a little more involved install command, this for windows
-pip install torch==1.8.1+cpu torchvision==0.9.1+cpu torchaudio===0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
-
-# this for linux
-pip install torch==1.8.1+cpu torchvision==0.9.1+cpu torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
-
-# then finally
-pip install nowcast-lstm
-```
-
 Once all Python libraries are installed, run the `initialize_session` function in R each time you use the library.
 
 ```R
@@ -32,6 +24,9 @@ library(nowcastLSTM)
 
 # this function should be run at the beginning of every session. Python path can be left empty to use the system default
 initialize_session(python_path = "path_to/python")
+
+# if you installed Python via reticulate, use this. You may get a warning about requesting one path and getting another, but it should work regardless.
+initialize_session(python_path = miniconda_path())
 
 # use this to set Python location permanently
 Sys.setenv(RETICULATE_PYTHON = "path_to/python")

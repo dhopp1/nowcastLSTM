@@ -1,5 +1,5 @@
 # nowcastLSTM
-R wrapper for [nowcast_lstm](https://github.com/dhopp1/nowcast_lstm) Python library. Long short-term memory neural networks for economic nowcasting. More background in [this](https://unctad.org/webflyer/economic-nowcasting-long-short-term-memory-artificial-neural-networks-lstm) UNCTAD research paper.
+R wrapper for [nowcast_lstm](https://github.com/dhopp1/nowcast_lstm) Python library. [MATLAB wrapper](https://github.com/dhopp1/nowcast_lstm_matlab) also exists. Long short-term memory neural networks for economic nowcasting. More background in [this](https://unctad.org/webflyer/economic-nowcasting-long-short-term-memory-artificial-neural-networks-lstm) UNCTAD research paper.
 
 ## Poll
 To help me better understand the potential userbase and determine whether / which languages to develop future wrappers for, please answer the following poll on your programming language usage.

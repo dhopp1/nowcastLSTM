@@ -64,7 +64,6 @@ LSTM <-
             n_models = 1,
             train_episodes = 200,
             batch_size = 30,
-            lr = 0.01,
             decay = 0.98,
             n_hidden = 20,
             n_layers = 2,

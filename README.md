@@ -1,15 +1,5 @@
 # nowcastLSTM
-R wrapper for [nowcast_lstm](https://github.com/dhopp1/nowcast_lstm) Python library. [MATLAB wrapper](https://github.com/dhopp1/nowcast_lstm_matlab) also exists. Long short-term memory neural networks for economic nowcasting. More background in [this](https://unctad.org/webflyer/economic-nowcasting-long-short-term-memory-artificial-neural-networks-lstm) UNCTAD research paper.
-
-## Poll
-To help me better understand the potential userbase and determine whether / which languages to develop future wrappers for, please answer the following poll on your programming language usage.
-
-[![](https://api.gh-polls.com/poll/01FMEWVADXFWSN5JCWE0M4W9ZP/I'm%20fine%20with%20the%20Python%20library)](https://api.gh-polls.com/poll/01FMEWVADXFWSN5JCWE0M4W9ZP/I'm%20fine%20with%20the%20Python%20library/vote)
-[![](https://api.gh-polls.com/poll/01FMEWVADXFWSN5JCWE0M4W9ZP/I'm%20fine%20with%20R%20wrapper)](https://api.gh-polls.com/poll/01FMEWVADXFWSN5JCWE0M4W9ZP/I'm%20fine%20with%20R%20wrapper/vote)
-[![](https://api.gh-polls.com/poll/01FMEWVADXFWSN5JCWE0M4W9ZP/I%20would%20only%20use%20the%20methodology%20with%20a%20Stata%20wrapper)](https://api.gh-polls.com/poll/01FMEWVADXFWSN5JCWE0M4W9ZP/I%20would%20only%20use%20the%20methodology%20with%20a%20Stata%20wrapper/vote)
-[![](https://api.gh-polls.com/poll/01FMEWVADXFWSN5JCWE0M4W9ZP/I%20would%20only%20use%20the%20methodology%20with%20a%20MATLAB%20wrapper)](https://api.gh-polls.com/poll/01FMEWVADXFWSN5JCWE0M4W9ZP/I%20would%20only%20use%20the%20methodology%20with%20a%20MATLAB%20wrapper/vote)
-[![](https://api.gh-polls.com/poll/01FMEWVADXFWSN5JCWE0M4W9ZP/I%20would%20only%20use%20the%20methodology%20with%20a%20SAS%20wrapper)](https://api.gh-polls.com/poll/01FMEWVADXFWSN5JCWE0M4W9ZP/I%20would%20only%20use%20the%20methodology%20with%20a%20SAS%20wrapper/vote)
-[![](https://api.gh-polls.com/poll/01FMEWVADXFWSN5JCWE0M4W9ZP/I%20would%20only%20use%20the%20methodology%20with%20an%20SPSS%20wrapper)](https://api.gh-polls.com/poll/01FMEWVADXFWSN5JCWE0M4W9ZP/I%20would%20only%20use%20the%20methodology%20with%20an%20SPSS%20wrapper/vote)
+R wrapper for [nowcast_lstm](https://github.com/dhopp1/nowcast_lstm) Python library. [MATLAB](https://github.com/dhopp1/nowcast_lstm_matlab) and [Julia](https://github.com/dhopp1/NowcastLSTM.jl) wrappers also exist. Long short-term memory neural networks for economic nowcasting. More background in [this](https://unctad.org/webflyer/economic-nowcasting-long-short-term-memory-artificial-neural-networks-lstm) UNCTAD research paper.
 
 # Installation and set up
 **Installing the library**: Install devtools with `install.packages("devtools")`. Then, from R, run: `devtools::install_github("dhopp1/nowcastLSTM")`. If you get errors about packages being built on different versions of R, try running `Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")`, then run the install command again.

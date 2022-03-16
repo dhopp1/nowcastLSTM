@@ -14,6 +14,7 @@ initialize_session <- function (python_path = "") {
     use_python(python_path)
   }
   py_run_string("from nowcast_lstm.LSTM import LSTM")
+  py_run_string("from nowcast_lstm.model_selection import variable_selection, hyperparameter_tuning, select_model")
   py_run_string("import pandas as pd")
   py_run_string("import numpy as np")
   py_run_string("import dill")
@@ -219,4 +220,333 @@ gen_news <- function (model, target_period, old_data, new_data) {
   r_news[["holdout_discrepency"]] <- news$holdout_discrepency
   
   return (r_news)
+}
+
+
+#' @title Variable selection
+#' @description Pick best-performing variables for a given set of hyperparameters. All parameters before `n_folds` identical to a base LSTM model.
+#' @param n_folds how many folds for rolling fold validation to do
+#' @param init_test_size ϵ [0,1]. What proportion of the data to use for testing at the first fold
+#' @param pub_lags list of periods back each input variable is set to missing. I.e. publication lag of the variable. Leave empty to pick variables only on complete information, no synthetic vintages.
+#' @param lags simulated periods back to test when selecting variables. E.g. -2 = simulating data as it would have been 2 months before target period, 1 = 1 month after, etc. So [-2, 0, 2] will account for those vintages in model selection. Leave empty to pick variables only on complete information, no synthetic vintages.
+#' @param performance_metric performance metric to use for variable selection. Pass "RMSE" for root mean square error, "MAE" for mean absolute error, or "AICc" for correctd Akaike Information Criterion. Alternatively can pass a function that takes arguments of a pandas Series of predictions and actuals and returns a scalar. E.g. custom_function(preds, actuals).
+#' @param alpha ϵ [0,1]. 0 implies no penalization for additional regressors, 1 implies most severe penalty for additional regressors. Not used for "AICc" performance metric.
+#' @param quiet whether or not to print progress
+#' @return A \code{list} containing the following elements:
+#'
+#' \item{col_names}{list of best-performing column names}
+#' \item{performance}{performance metric of these variables (i.e. best performing)}
+#'
+#' @export
+
+variable_selection <- function (
+  data,
+  target_variable,
+  n_timesteps,
+  fill_na_func = "mean",
+  fill_ragged_edges_func = "mean",
+  n_models = 1,
+  train_episodes = 200,
+  batch_size = 30,
+  decay = 0.98,
+  n_hidden = 20,
+  n_layers = 2,
+  dropout = 0,
+  criterion = "''",
+  optimizer = "''",
+  optimizer_parameters = list("lr"=1e-2),
+  n_folds = 1,
+  init_test_size = 0.2,
+  pub_lags = c(),
+  lags = c(),
+  performance_metric = "RMSE",
+  alpha = 0.0,
+  quiet = FALSE
+) {
+  format_dataframe(data)
+  # NA and ragged edges filling
+  fill_switch <- function (x) {
+    if (x == "mean") {
+      return ("np.nanmean")
+    } else if (x == "median") {
+      return ("np.nanmedian")
+    } else if (x == "ARMA") {
+      return ('"ARMA"')
+    } else if (x == "RMSE") {
+      return ('"RMSE"')
+    } else if (x == "MAE") {
+      return ('"MAE"')
+    } else if (x == "AICc") {
+      return ('"AICc"')
+    } else if (x == TRUE) {
+      return ('True')
+    } else if (x == FALSE) {
+      return ('False')
+    }
+  }
+  fill_na_func <- fill_switch(fill_na_func)
+  fill_ragged_edges_func <- fill_switch(fill_ragged_edges_func)
+  performance_metric <- fill_switch(performance_metric)
+  quiet <- fill_switch(quiet)
+  
+  # converting R named list to python Dict
+  list_to_dict <- function (my_list) {
+    return (paste0("{", paste(paste0("'", names(my_list), "':", my_list), collapse=","), "}"))
+  }
+  optimizer_parameters_dict <- list_to_dict(optimizer_parameters)
+  
+  # converting R vector to python list
+  vec_to_list <- function (my_vec) {
+    if (is_empty(my_vec)) {
+      return ("[]")
+    } else {
+      final_string = "["
+      for (i in my_vec) {
+        final_string <- paste0(final_string, i, ",")
+      }
+      final_string <- paste0(final_string, "]")
+      return (final_string)
+    }
+  }
+  pub_lags <- vec_to_list(pub_lags)
+  lags <- vec_to_list(lags)
+  
+  py_run_string(
+    str_interp(
+      "tmp1, tmp2 = variable_selection(data=r.tmp_df, target_variable='${target_variable}', n_timesteps=${n_timesteps}, fill_na_func=${fill_na_func}, fill_ragged_edges_func=${fill_ragged_edges_func}, n_models=${n_models}, train_episodes=${train_episodes}, batch_size=${batch_size}, decay=${decay}, n_hidden=${n_hidden}, n_layers=${n_layers}, dropout=${dropout}, criterion=${criterion}, optimizer=${optimizer}, optimizer_parameters=${optimizer_parameters_dict}, n_folds=${n_folds}, init_test_size=${init_test_size}, pub_lags=${pub_lags}, lags=${lags}, performance_metric=${performance_metric}, alpha=${alpha}, quiet=${quiet})"
+    )
+  )
+  
+  return (
+    list(col_names = py$tmp1, performance = py$tmp2)
+    )
+}
+
+
+#' @title Hyperparameter tuning
+#' @description Pick best-performing hyperparameters for a given dataset. n_timesteps_grid has default grid for predicting quarterly variable with monthly series, may have to change per use case. E.g. [12,24] for a yearly target with monthly indicators. All parameters up to `optimizer_parameters` exactly the same as for any LSTM() model, provide a list with the values to check.
+#' @param n_folds how many folds for rolling fold validation to do
+#' @param init_test_size ϵ [0,1]. What proportion of the data to use for testing at the first fold
+#' @param pub_lags list of periods back each input variable is set to missing. I.e. publication lag of the variable. Leave empty to pick variables only on complete information, no synthetic vintages.
+#' @param lags simulated periods back to test when selecting variables. E.g. -2 = simulating data as it would have been 2 months before target period, 1 = 1 month after, etc. So [-2, 0, 2] will account for those vintages in model selection. Leave empty to pick variables only on complete information, no synthetic vintages.
+#' @param performance_metric performance metric to use for variable selection. Pass "RMSE" for root mean square error, "MAE" for mean absolute error, or "AICc" for correctd Akaike Information Criterion. Alternatively can pass a function that takes arguments of a pandas Series of predictions and actuals and returns a scalar. E.g. custom_function(preds, actuals).
+#' @return A \code{dataframe} containing the following elements:
+#'
+#' \item{hyper_params}{liste of hyperparameters, access via df$hyper_params[[1]], etc.}
+#' \item{performance}{performance metric of these hyperparameteres}
+#'
+#' @export
+
+hyperparameter_tuning <- function (
+  data,
+  target_variable,
+  n_models = 1,
+  n_timesteps_grid = c(6, 12),
+  fill_na_func_grid = c("mean"),
+  fill_ragged_edges_func_grid = c("mean"),
+  train_episodes_grid = c(50, 100, 200),
+  batch_size_grid = c(30, 100, 200),
+  decay_grid = c(0.98),
+  n_hidden_grid = c(10, 20, 40),
+  n_layers_grid = c(1, 2, 4),
+  dropout_grid = c(0),
+  criterion_grid = c("''"),
+  optimizer_grid = c("''"),
+  optimizer_parameters_grid = c(list("lr"=1e-2)),
+  n_folds = 1,
+  init_test_size = 0.2,
+  pub_lags = c(),
+  lags = c(),
+  performance_metric = "RMSE",
+  quiet = FALSE
+) {
+  format_dataframe(data)
+  # NA and ragged edges filling
+  fill_switch <- function (x) {
+    if (x == "mean") {
+      return ("np.nanmean")
+    } else if (x == "median") {
+      return ("np.nanmedian")
+    } else if (x == "ARMA") {
+      return ('"ARMA"')
+    } else if (x == "RMSE") {
+      return ('"RMSE"')
+    } else if (x == "MAE") {
+      return ('"MAE"')
+    } else if (x == "AICc") {
+      return ('"AICc"')
+    } else if (x == TRUE) {
+      return ('True')
+    } else if (x == FALSE) {
+      return ('False')
+    }
+  }
+  performance_metric <- fill_switch(performance_metric)
+  quiet <- fill_switch(quiet)
+  
+  # converting R named list to python Dict
+  list_to_dict <- function (my_list) {
+    return (paste0("{", paste(paste0("'", names(my_list), "':", my_list), collapse=","), "}"))
+  }
+  
+  # converting R vector to python list
+  vec_to_list <- function (my_vec) {
+    if (is_empty(my_vec)) {
+      return ("[]")
+    } else {
+      final_string = "["
+      for (i in my_vec) {
+        final_string <- paste0(final_string, i, ",")
+      }
+      final_string <- paste0(final_string, "]")
+      return (final_string)
+    }
+  }
+  pub_lags <- vec_to_list(pub_lags)
+  lags <- vec_to_list(lags)
+  n_timesteps_grid <- vec_to_list(n_timesteps_grid)
+  for (i in 1:length(fill_na_func_grid)) {
+    fill_na_func_grid[i] <- fill_switch(fill_na_func_grid[i])
+  }
+  fill_na_func_grid <- vec_to_list(fill_na_func_grid)
+  for (i in 1:length(fill_ragged_edges_func_grid)) {
+    fill_ragged_edges_func_grid[i] <- fill_switch(fill_ragged_edges_func_grid[i])
+  }
+  fill_ragged_edges_func_grid <- vec_to_list(fill_ragged_edges_func_grid)
+  train_episodes_grid <- vec_to_list(train_episodes_grid)
+  batch_size_grid <- vec_to_list(batch_size_grid)
+  decay_grid <- vec_to_list(decay_grid)
+  n_hidden_grid <- vec_to_list(n_hidden_grid)
+  n_layers_grid <- vec_to_list(n_layers_grid)
+  dropout_grid <- vec_to_list(dropout_grid)
+  criterion_grid <- vec_to_list(criterion_grid)
+  optimizer_grid <- vec_to_list(optimizer_grid)
+  for (i in 1:length(optimizer_parameters_grid)) {
+    optimizer_parameters_grid[i] <- list_to_dict(optimizer_parameters_grid[i])
+  }
+  optimizer_parameters_grid <- vec_to_list(optimizer_parameters_grid)
+  
+  py_run_string(
+    str_interp(
+      "tmp1 = hyperparameter_tuning(data=r.tmp_df, target_variable='${target_variable}', n_timesteps_grid=${n_timesteps_grid}, fill_na_func_grid=${fill_na_func_grid}, fill_ragged_edges_func_grid=${fill_ragged_edges_func_grid}, n_models=${n_models}, train_episodes_grid=${train_episodes_grid}, batch_size_grid=${batch_size_grid}, decay_grid=${decay_grid}, n_hidden_grid=${n_hidden_grid}, n_layers_grid=${n_layers_grid}, dropout_grid=${dropout_grid}, criterion_grid=${criterion_grid}, optimizer_grid=${optimizer_grid}, optimizer_parameters_grid=${optimizer_parameters_grid}, n_folds=${n_folds}, init_test_size=${init_test_size}, pub_lags=${pub_lags}, lags=${lags}, performance_metric=${performance_metric}, quiet=${quiet})"
+    )
+  )
+  
+  return (py$tmp1)
+}
+
+
+#' @title Variable selection and hyperparameter tuning combined.
+#' @description Pick best-performing hyperparameters and variables for a given dataset. Given all permutations of hyperparameters (k), and p variables in the data, this function will run k * p * 2 models. This can take a very long time. To cut down on this time, run it with a highly reduced hyperparameter grid, i.e., a very small k, then record the selected variables, then run the `hyperparameter_tuning` function with these selected varaibles with a much more detailed grid. All parameters up to `optimizer_parameters` exactly the same as for any LSTM() model, provide a list with the values to check.
+#' @param n_folds how many folds for rolling fold validation to do
+#' @param init_test_size ϵ [0,1]. What proportion of the data to use for testing at the first fold
+#' @param pub_lags list of periods back each input variable is set to missing. I.e. publication lag of the variable. Leave empty to pick variables only on complete information, no synthetic vintages.
+#' @param lags simulated periods back to test when selecting variables. E.g. -2 = simulating data as it would have been 2 months before target period, 1 = 1 month after, etc. So [-2, 0, 2] will account for those vintages in model selection. Leave empty to pick variables only on complete information, no synthetic vintages.
+#' @param performance_metric performance metric to use for variable selection. Pass "RMSE" for root mean square error, "MAE" for mean absolute error, or "AICc" for correctd Akaike Information Criterion. Alternatively can pass a function that takes arguments of a pandas Series of predictions and actuals and returns a scalar. E.g. custom_function(preds, actuals).
+#' @param alpha ϵ [0,1]. 0 implies no penalization for additional regressors, 1 implies most severe penalty for additional regressors. Not used for "AICc" performance metric.
+#' @return A \code{dataframe} containing the following elements:
+#'
+#' \item{variables}{list of variables}
+#' \item{hyper_params}{list of hyperparameters, access via df$hyper_params[[1]], etc.}
+#' \item{performance}{performance metric of these hyperparameteres}
+#'
+#' @export
+
+select_model <- function (
+  data,
+  target_variable,
+  n_models = 1,
+  n_timesteps_grid = c(6, 12),
+  fill_na_func_grid = c("mean"),
+  fill_ragged_edges_func_grid = c("mean"),
+  train_episodes_grid = c(50, 100, 200),
+  batch_size_grid = c(30, 100, 200),
+  decay_grid = c(0.98),
+  n_hidden_grid = c(10, 20, 40),
+  n_layers_grid = c(1, 2, 4),
+  dropout_grid = c(0),
+  criterion_grid = c("''"),
+  optimizer_grid = c("''"),
+  optimizer_parameters_grid = c(list("lr"=1e-2)),
+  n_folds = 1,
+  init_test_size = 0.2,
+  pub_lags = c(),
+  lags = c(),
+  performance_metric = "RMSE",
+  alpha=0.0,
+  quiet = FALSE
+) {
+  format_dataframe(data)
+  # NA and ragged edges filling
+  fill_switch <- function (x) {
+    if (x == "mean") {
+      return ("np.nanmean")
+    } else if (x == "median") {
+      return ("np.nanmedian")
+    } else if (x == "ARMA") {
+      return ('"ARMA"')
+    } else if (x == "RMSE") {
+      return ('"RMSE"')
+    } else if (x == "MAE") {
+      return ('"MAE"')
+    } else if (x == "AICc") {
+      return ('"AICc"')
+    } else if (x == TRUE) {
+      return ('True')
+    } else if (x == FALSE) {
+      return ('False')
+    }
+  }
+  performance_metric <- fill_switch(performance_metric)
+  quiet <- fill_switch(quiet)
+  
+  # converting R named list to python Dict
+  list_to_dict <- function (my_list) {
+    return (paste0("{", paste(paste0("'", names(my_list), "':", my_list), collapse=","), "}"))
+  }
+  
+  # converting R vector to python list
+  vec_to_list <- function (my_vec) {
+    if (is_empty(my_vec)) {
+      return ("[]")
+    } else {
+      final_string = "["
+      for (i in my_vec) {
+        final_string <- paste0(final_string, i, ",")
+      }
+      final_string <- paste0(final_string, "]")
+      return (final_string)
+    }
+  }
+  pub_lags <- vec_to_list(pub_lags)
+  lags <- vec_to_list(lags)
+  n_timesteps_grid <- vec_to_list(n_timesteps_grid)
+  for (i in 1:length(fill_na_func_grid)) {
+    fill_na_func_grid[i] <- fill_switch(fill_na_func_grid[i])
+  }
+  fill_na_func_grid <- vec_to_list(fill_na_func_grid)
+  for (i in 1:length(fill_ragged_edges_func_grid)) {
+    fill_ragged_edges_func_grid[i] <- fill_switch(fill_ragged_edges_func_grid[i])
+  }
+  fill_ragged_edges_func_grid <- vec_to_list(fill_ragged_edges_func_grid)
+  train_episodes_grid <- vec_to_list(train_episodes_grid)
+  batch_size_grid <- vec_to_list(batch_size_grid)
+  decay_grid <- vec_to_list(decay_grid)
+  n_hidden_grid <- vec_to_list(n_hidden_grid)
+  n_layers_grid <- vec_to_list(n_layers_grid)
+  dropout_grid <- vec_to_list(dropout_grid)
+  criterion_grid <- vec_to_list(criterion_grid)
+  optimizer_grid <- vec_to_list(optimizer_grid)
+  for (i in 1:length(optimizer_parameters_grid)) {
+    optimizer_parameters_grid[i] <- list_to_dict(optimizer_parameters_grid[i])
+  }
+  optimizer_parameters_grid <- vec_to_list(optimizer_parameters_grid)
+  
+  py_run_string(
+    str_interp(
+      "tmp1 = select_model(data=r.tmp_df, target_variable='${target_variable}', n_timesteps_grid=${n_timesteps_grid}, fill_na_func_grid=${fill_na_func_grid}, fill_ragged_edges_func_grid=${fill_ragged_edges_func_grid}, n_models=${n_models}, train_episodes_grid=${train_episodes_grid}, batch_size_grid=${batch_size_grid}, decay_grid=${decay_grid}, n_hidden_grid=${n_hidden_grid}, n_layers_grid=${n_layers_grid}, dropout_grid=${dropout_grid}, criterion_grid=${criterion_grid}, optimizer_grid=${optimizer_grid}, optimizer_parameters_grid=${optimizer_parameters_grid}, n_folds=${n_folds}, init_test_size=${init_test_size}, pub_lags=${pub_lags}, lags=${lags}, performance_metric=${performance_metric}, alpha=${alpha}, quiet=${quiet})"
+    )
+  )
+  
+  return (py$tmp1)
 }

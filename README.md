@@ -1,4 +1,6 @@
 # nowcastLSTM
+**New in v0.2.0**: ability to get feature contributions to the model and perform automatic hyperparameter tuning and variable selection, no need to write this outside of the library anymore.
+
 R wrapper for [nowcast_lstm](https://github.com/dhopp1/nowcast_lstm) Python library. [MATLAB](https://github.com/dhopp1/nowcast_lstm_matlab) and [Julia](https://github.com/dhopp1/NowcastLSTM.jl) wrappers also exist. Long short-term memory neural networks for economic nowcasting. More background in [this](https://unctad.org/webflyer/economic-nowcasting-long-short-term-memory-artificial-neural-networks-lstm) UNCTAD research paper.
 
 # Installation and set up
@@ -69,6 +71,20 @@ save_lstm(model, "trained_model.pkl", python_model_name = "model")
 trained_model <- load_lstm("trained_model.pkl", python_model_name = "trained_model")
 ```
 
+## Model selection
+To ease variable and hyperparameter selection, the library provides provisions for this process to be carried out automatically. See the example file or run `?` on the functions for more information.
+
+```R
+# case where given hyperparameters, want to select which variables go into the model
+selected_variables <- variable_selection(data, "target_col_name", n_timesteps=12) # default parameters with 12 timestep history
+
+# case where given variables, want to select hyperparameters
+performance <- hyperparameter_tuning(data, "target_col_name", n_timesteps=12, n_hidden_grid=c(10,20))
+
+# case where want to select both variables and hyperparameters for the model
+performance <- select_model(data, "target_col_name", n_timesteps=12, n_hidden_grid=c(10,20))
+```
+
 ## LSTM parameters
 - `data`: `dataframe` of the data to train the model on. Should contain a target column. Any non-numeric columns will be dropped. It should be in the most frequent period of the data. E.g. if I have three monthly variables, two quarterly variables, and a quarterly series, the rows of the dataframe should be months, with the quarterly values appearing every three months (whether Q1 = Jan 1 or Mar 1 depends on the series, but generally the quarterly value should come at the end of the quarter, i.e. Mar 1), with NAs or 0s in between. The same logic applies for yearly variables.
 - `target_variable`: a `string`, the name of the target column in the dataframe.
@@ -94,3 +110,4 @@ Assuming a model has been instantiated and trained with `model = LSTM(...)`, the
 - `load_lstm`: to load a saved model from disk
 - `ragged_preds(model, pub_lags, lag, new_data, start_date, end_date)`: adds artificial missing data then returns a dataframe with date, actuals, and predictions. This is especially useful as a testing mechanism, to generate datasets to see how a trained model would have performed at different synthetic vintages or periods of time in the past. `pub_lags` should be a list of ints (in the same order as the columns of the original data) of length n\_features (i.e. excluding the target variable) dictating the normal publication lag of each of the variables. `lag` is an int of how many periods back we want to simulate being, interpretable as last period relative to target period. E.g. if we are nowcasting June, `lag = -1` will simulate being in May, where May data is published for variables with a publication lag of 0. It will fill with missings values that wouldn't have been available yet according to the publication lag of the variable + the lag parameter. It will fill missings with the same method specified in the `fill_ragged_edges_func` parameter in model instantiation.
 - `gen_news(model, target_period, old_data, new_data)`: Generates news between one data release to another, adding an element of causal inference to the network. Works by holding out new data column by column, recording differences between this prediction and the prediction on full data, and registering this difference as the new data's contribution to the prediction. Contributions are then scaled to equal the actual observed difference in prediction in the aggregate between the old dataset and the new dataset.
+- `model$feature_contribution()`: Generates a dataframe showing the relative feature importance of variables in the model using the permutation feature contribution method via RMSE on the train set.

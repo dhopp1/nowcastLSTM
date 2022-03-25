@@ -231,6 +231,7 @@ gen_news <- function (model, target_period, old_data, new_data) {
 #' @param lags simulated periods back to test when selecting variables. E.g. -2 = simulating data as it would have been 2 months before target period, 1 = 1 month after, etc. So [-2, 0, 2] will account for those vintages in model selection. Leave empty to pick variables only on complete information, no synthetic vintages.
 #' @param performance_metric performance metric to use for variable selection. Pass "RMSE" for root mean square error, "MAE" for mean absolute error, or "AICc" for correctd Akaike Information Criterion. Alternatively can pass a function that takes arguments of a pandas Series of predictions and actuals and returns a scalar. E.g. custom_function(preds, actuals).
 #' @param alpha ϵ [0,1]. 0 implies no penalization for additional regressors, 1 implies most severe penalty for additional regressors. Not used for "AICc" performance metric.
+#' @param initial_ordering ϵ ["feature_contribution", "univariate"]. How to get initial order of features to check additively. "feature_contribution" uses the feature contribution of one model, "univariate" calculates univariate models of all features and orders by performance metric. Feature contribution is about twice as fast.
 #' @param quiet whether or not to print progress
 #' @return A \code{list} containing the following elements:
 #'
@@ -261,6 +262,7 @@ variable_selection <- function (
   lags = c(),
   performance_metric = "RMSE",
   alpha = 0.0,
+  initial_ordering="feature_contribution",
   quiet = FALSE
 ) {
   format_dataframe(data)
@@ -313,7 +315,7 @@ variable_selection <- function (
   
   py_run_string(
     str_interp(
-      "tmp1, tmp2 = variable_selection(data=r.tmp_df, target_variable='${target_variable}', n_timesteps=${n_timesteps}, fill_na_func=${fill_na_func}, fill_ragged_edges_func=${fill_ragged_edges_func}, n_models=${n_models}, train_episodes=${train_episodes}, batch_size=${batch_size}, decay=${decay}, n_hidden=${n_hidden}, n_layers=${n_layers}, dropout=${dropout}, criterion=${criterion}, optimizer=${optimizer}, optimizer_parameters=${optimizer_parameters_dict}, n_folds=${n_folds}, init_test_size=${init_test_size}, pub_lags=${pub_lags}, lags=${lags}, performance_metric=${performance_metric}, alpha=${alpha}, quiet=${quiet})"
+      "tmp1, tmp2 = variable_selection(data=r.tmp_df, target_variable='${target_variable}', n_timesteps=${n_timesteps}, fill_na_func=${fill_na_func}, fill_ragged_edges_func=${fill_ragged_edges_func}, n_models=${n_models}, train_episodes=${train_episodes}, batch_size=${batch_size}, decay=${decay}, n_hidden=${n_hidden}, n_layers=${n_layers}, dropout=${dropout}, criterion=${criterion}, optimizer=${optimizer}, optimizer_parameters=${optimizer_parameters_dict}, n_folds=${n_folds}, init_test_size=${init_test_size}, pub_lags=${pub_lags}, lags=${lags}, performance_metric=${performance_metric}, alpha=${alpha}, initial_ordering=${initial_ordering}, quiet=${quiet})"
     )
   )
   
@@ -444,6 +446,7 @@ hyperparameter_tuning <- function (
 #' @param lags simulated periods back to test when selecting variables. E.g. -2 = simulating data as it would have been 2 months before target period, 1 = 1 month after, etc. So [-2, 0, 2] will account for those vintages in model selection. Leave empty to pick variables only on complete information, no synthetic vintages.
 #' @param performance_metric performance metric to use for variable selection. Pass "RMSE" for root mean square error, "MAE" for mean absolute error, or "AICc" for correctd Akaike Information Criterion. Alternatively can pass a function that takes arguments of a pandas Series of predictions and actuals and returns a scalar. E.g. custom_function(preds, actuals).
 #' @param alpha ϵ [0,1]. 0 implies no penalization for additional regressors, 1 implies most severe penalty for additional regressors. Not used for "AICc" performance metric.
+#' @param initial_ordering ϵ ["feature_contribution", "univariate"]. How to get initial order of features to check additively. "feature_contribution" uses the feature contribution of one model, "univariate" calculates univariate models of all features and orders by performance metric. Feature contribution is about twice as fast.
 #' @return A \code{dataframe} containing the following elements:
 #'
 #' \item{variables}{list of variables}
@@ -474,6 +477,7 @@ select_model <- function (
   lags = c(),
   performance_metric = "RMSE",
   alpha=0.0,
+  initial_ordering="feature_contribution",
   quiet = FALSE
 ) {
   format_dataframe(data)
@@ -544,7 +548,7 @@ select_model <- function (
   
   py_run_string(
     str_interp(
-      "tmp1 = select_model(data=r.tmp_df, target_variable='${target_variable}', n_timesteps_grid=${n_timesteps_grid}, fill_na_func_grid=${fill_na_func_grid}, fill_ragged_edges_func_grid=${fill_ragged_edges_func_grid}, n_models=${n_models}, train_episodes_grid=${train_episodes_grid}, batch_size_grid=${batch_size_grid}, decay_grid=${decay_grid}, n_hidden_grid=${n_hidden_grid}, n_layers_grid=${n_layers_grid}, dropout_grid=${dropout_grid}, criterion_grid=${criterion_grid}, optimizer_grid=${optimizer_grid}, optimizer_parameters_grid=${optimizer_parameters_grid}, n_folds=${n_folds}, init_test_size=${init_test_size}, pub_lags=${pub_lags}, lags=${lags}, performance_metric=${performance_metric}, alpha=${alpha}, quiet=${quiet})"
+      "tmp1 = select_model(data=r.tmp_df, target_variable='${target_variable}', n_timesteps_grid=${n_timesteps_grid}, fill_na_func_grid=${fill_na_func_grid}, fill_ragged_edges_func_grid=${fill_ragged_edges_func_grid}, n_models=${n_models}, train_episodes_grid=${train_episodes_grid}, batch_size_grid=${batch_size_grid}, decay_grid=${decay_grid}, n_hidden_grid=${n_hidden_grid}, n_layers_grid=${n_layers_grid}, dropout_grid=${dropout_grid}, criterion_grid=${criterion_grid}, optimizer_grid=${optimizer_grid}, optimizer_parameters_grid=${optimizer_parameters_grid}, n_folds=${n_folds}, init_test_size=${init_test_size}, pub_lags=${pub_lags}, lags=${lags}, performance_metric=${performance_metric}, alpha=${alpha}, initial_ordering=${initial_ordering}, quiet=${quiet})"
     )
   )
   

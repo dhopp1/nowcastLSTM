@@ -46,7 +46,7 @@ Further explanation of the background problem can be found in [this UNCTAD resea
 Given `data` = a dataframe with a date column + monthly data + a quarterly target series to run the model on, usage is as follows:
 
 ```R
-library(nowcastDFM)
+library(nowcastLSTM)
 initialize_session()
 
 # this command will instantiate and train an LSTM network

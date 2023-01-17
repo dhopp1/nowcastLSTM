@@ -1,4 +1,7 @@
 # nowcastLSTM
+
+**New in v0.2.2**: ability to get uncertainty intervals for predictions and predictions on synthetic vintages.
+
 **New in v0.2.0**: ability to get feature contributions to the model and perform automatic hyperparameter tuning and variable selection, no need to write this outside of the library anymore.
 
 R wrapper for [nowcast_lstm](https://github.com/dhopp1/nowcast_lstm) Python library. [MATLAB](https://github.com/dhopp1/nowcast_lstm_matlab) and [Julia](https://github.com/dhopp1/NowcastLSTM.jl) wrappers also exist. Long short-term memory neural networks for economic nowcasting. More background in [this](https://www.researchgate.net/publication/363509881_Economic_Nowcasting_with_Long_Short-Term_Memory_Artificial_Neural_Networks_LSTM) paper in the Journal of Official Statistics.
@@ -83,6 +86,25 @@ performance <- hyperparameter_tuning(data, "target_col_name", n_timesteps=12, n_
 
 # case where want to select both variables and hyperparameters for the model
 performance <- select_model(data, "target_col_name", n_timesteps=12, n_hidden_grid=c(10,20))
+```
+
+## Prediction uncertainty
+Produce estimates along with lower and upper bounds of an uncertainty interval. See the example file or run `?` on the functions for more information.
+
+```R
+interval_preds <- interval_predict(
+  model,
+  test_data,
+  interval = 0.95
+)
+
+ragged_interval_preds <- ragged_interval_predict(
+  model, 
+  pub_lags, 
+  lag = 2, 
+  data = test_data, 
+  interval = 0.95
+)
 ```
 
 ## LSTM parameters

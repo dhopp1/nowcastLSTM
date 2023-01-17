@@ -13,13 +13,13 @@ LSTM(
   n_models = 1,
   train_episodes = 200,
   batch_size = 30,
-  lr = 0.01,
   decay = 0.98,
   n_hidden = 20,
   n_layers = 2,
   dropout = 0,
   criterion = "''",
   optimizer = "''",
+  optimizer_parameters = list(lr = 0.01),
   python_model_name = "model"
 )
 }
@@ -40,8 +40,6 @@ LSTM(
 
 \item{batch_size}{integer, number of observations per training batch}
 
-\item{lr}{double, learning rate}
-
 \item{decay}{double, learning rate decay}
 
 \item{n_hidden}{integer, number of hidden states in the network}
@@ -52,7 +50,9 @@ LSTM(
 
 \item{criterion}{torch loss criterion, defaults to MAE. For E.g. MSE, pass "torch.nn.MSELoss()"}
 
-\item{optimizer}{torch optimizer, defaults to Adam}
+\item{optimizer}{torch optimizer, defaults to Adam. For a different one, pass e.g. "torch.optim.SGD"}
+
+\item{optimizer_parameters}{parameters for optimizer, including learning rate. Pass as a named list, e.g. list("lr"=0.01, "weight_decay"=0.001)}
 
 \item{python_model_name}{what the model will be called in the python session. Relevant if more than one model is being trained for simultaneous use. For clarity, should be the same as the name of the R object the model is being saved to.}
 }

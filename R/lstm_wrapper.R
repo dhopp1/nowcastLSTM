@@ -14,7 +14,9 @@ initialize_session <- function (python_path = "") {
     use_python(python_path)
   }
   py_run_string("from nowcast_lstm.LSTM import LSTM")
-  py_run_string("from nowcast_lstm.model_selection import variable_selection, hyperparameter_tuning, select_model")
+  py_run_string(
+    "from nowcast_lstm.model_selection import variable_selection, hyperparameter_tuning, select_model"
+  )
   py_run_string("import pandas as pd")
   py_run_string("import numpy as np")
   py_run_string("import dill")
@@ -50,7 +52,7 @@ format_dataframe <- function (dataframe, df_name = "tmp_df") {
 #' @param dropout double, dropout rate between the LSTM layers
 #' @param criterion torch loss criterion, defaults to MAE. For E.g. MSE, pass "torch.nn.MSELoss()"
 #' @param optimizer torch optimizer, defaults to Adam. For a different one, pass e.g. "torch.optim.SGD"
-#' @param optimizer_parameters parameters for optimizer, including learning rate. Pass as a named list, e.g. list("lr"=0.01, "weight_decay"=0.001}
+#' @param optimizer_parameters parameters for optimizer, including learning rate. Pass as a named list, e.g. list("lr"=0.01, "weight_decay"=0.001)
 #' @param python_model_name what the model will be called in the python session. Relevant if more than one model is being trained for simultaneous use. For clarity, should be the same as the name of the R object the model is being saved to.
 #' @return trained LSTM model
 #'
@@ -71,7 +73,7 @@ LSTM <-
             dropout = 0,
             criterion = "''",
             optimizer = "''",
-            optimizer_parameters = list("lr"=1e-2),
+            optimizer_parameters = list("lr" = 1e-2),
             python_model_name = "model") {
     format_dataframe(data)
     # NA and ragged edges filling
@@ -89,7 +91,9 @@ LSTM <-
     
     # converting R named list to python Dict
     list_to_dict <- function (my_list) {
-      return (paste0("{", paste(paste0("'", names(my_list), "':", my_list), collapse=","), "}"))
+      return (paste0("{", paste(
+        paste0("'", names(my_list), "':", my_list), collapse = ","
+      ), "}"))
     }
     optimizer_parameters_dict <- list_to_dict(optimizer_parameters)
     
@@ -217,7 +221,7 @@ gen_news <- function (model, target_period, old_data, new_data) {
   
   # convert to R dataframe if not already one
   if (typeof(news$news) != "list") {
-    r_news[["news"]] <- py_to_r(news$news) 
+    r_news[["news"]] <- py_to_r(news$news)
   } else {
     r_news[["news"]] <- news$news
   }
@@ -246,31 +250,29 @@ gen_news <- function (model, target_period, old_data, new_data) {
 #'
 #' @export
 
-variable_selection <- function (
-  data,
-  target_variable,
-  n_timesteps,
-  fill_na_func = "mean",
-  fill_ragged_edges_func = "mean",
-  n_models = 1,
-  train_episodes = 200,
-  batch_size = 30,
-  decay = 0.98,
-  n_hidden = 20,
-  n_layers = 2,
-  dropout = 0,
-  criterion = "''",
-  optimizer = "''",
-  optimizer_parameters = list("lr"=1e-2),
-  n_folds = 1,
-  init_test_size = 0.2,
-  pub_lags = c(),
-  lags = c(),
-  performance_metric = "RMSE",
-  alpha = 0.0,
-  initial_ordering="feature_contribution",
-  quiet = FALSE
-) {
+variable_selection <- function (data,
+                                target_variable,
+                                n_timesteps,
+                                fill_na_func = "mean",
+                                fill_ragged_edges_func = "mean",
+                                n_models = 1,
+                                train_episodes = 200,
+                                batch_size = 30,
+                                decay = 0.98,
+                                n_hidden = 20,
+                                n_layers = 2,
+                                dropout = 0,
+                                criterion = "''",
+                                optimizer = "''",
+                                optimizer_parameters = list("lr" = 1e-2),
+                                n_folds = 1,
+                                init_test_size = 0.2,
+                                pub_lags = c(),
+                                lags = c(),
+                                performance_metric = "RMSE",
+                                alpha = 0.0,
+                                initial_ordering = "feature_contribution",
+                                quiet = FALSE) {
   format_dataframe(data)
   # NA and ragged edges filling
   fill_switch <- function (x) {
@@ -299,7 +301,9 @@ variable_selection <- function (
   
   # converting R named list to python Dict
   list_to_dict <- function (my_list) {
-    return (paste0("{", paste(paste0("'", names(my_list), "':", my_list), collapse=","), "}"))
+    return (paste0("{", paste(
+      paste0("'", names(my_list), "':", my_list), collapse = ","
+    ), "}"))
   }
   optimizer_parameters_dict <- list_to_dict(optimizer_parameters)
   
@@ -325,9 +329,7 @@ variable_selection <- function (
     )
   )
   
-  return (
-    list(col_names = py$tmp1, performance = py$tmp2)
-    )
+  return (list(col_names = py$tmp1, performance = py$tmp2))
 }
 
 
@@ -345,29 +347,27 @@ variable_selection <- function (
 #'
 #' @export
 
-hyperparameter_tuning <- function (
-  data,
-  target_variable,
-  n_models = 1,
-  n_timesteps_grid = c(6, 12),
-  fill_na_func_grid = c("mean"),
-  fill_ragged_edges_func_grid = c("mean"),
-  train_episodes_grid = c(50, 100, 200),
-  batch_size_grid = c(30, 100, 200),
-  decay_grid = c(0.98),
-  n_hidden_grid = c(10, 20, 40),
-  n_layers_grid = c(1, 2, 4),
-  dropout_grid = c(0),
-  criterion_grid = c("''"),
-  optimizer_grid = c("''"),
-  optimizer_parameters_grid = c(list("lr"=1e-2)),
-  n_folds = 1,
-  init_test_size = 0.2,
-  pub_lags = c(),
-  lags = c(),
-  performance_metric = "RMSE",
-  quiet = FALSE
-) {
+hyperparameter_tuning <- function (data,
+                                   target_variable,
+                                   n_models = 1,
+                                   n_timesteps_grid = c(6, 12),
+                                   fill_na_func_grid = c("mean"),
+                                   fill_ragged_edges_func_grid = c("mean"),
+                                   train_episodes_grid = c(50, 100, 200),
+                                   batch_size_grid = c(30, 100, 200),
+                                   decay_grid = c(0.98),
+                                   n_hidden_grid = c(10, 20, 40),
+                                   n_layers_grid = c(1, 2, 4),
+                                   dropout_grid = c(0),
+                                   criterion_grid = c("''"),
+                                   optimizer_grid = c("''"),
+                                   optimizer_parameters_grid = c(list("lr" = 1e-2)),
+                                   n_folds = 1,
+                                   init_test_size = 0.2,
+                                   pub_lags = c(),
+                                   lags = c(),
+                                   performance_metric = "RMSE",
+                                   quiet = FALSE) {
   format_dataframe(data)
   # NA and ragged edges filling
   fill_switch <- function (x) {
@@ -394,7 +394,9 @@ hyperparameter_tuning <- function (
   
   # converting R named list to python Dict
   list_to_dict <- function (my_list) {
-    return (paste0("{", paste(paste0("'", names(my_list), "':", my_list), collapse=","), "}"))
+    return (paste0("{", paste(
+      paste0("'", names(my_list), "':", my_list), collapse = ","
+    ), "}"))
   }
   
   # converting R vector to python list
@@ -418,9 +420,11 @@ hyperparameter_tuning <- function (
   }
   fill_na_func_grid <- vec_to_list(fill_na_func_grid)
   for (i in 1:length(fill_ragged_edges_func_grid)) {
-    fill_ragged_edges_func_grid[i] <- fill_switch(fill_ragged_edges_func_grid[i])
+    fill_ragged_edges_func_grid[i] <-
+      fill_switch(fill_ragged_edges_func_grid[i])
   }
-  fill_ragged_edges_func_grid <- vec_to_list(fill_ragged_edges_func_grid)
+  fill_ragged_edges_func_grid <-
+    vec_to_list(fill_ragged_edges_func_grid)
   train_episodes_grid <- vec_to_list(train_episodes_grid)
   batch_size_grid <- vec_to_list(batch_size_grid)
   decay_grid <- vec_to_list(decay_grid)
@@ -430,9 +434,11 @@ hyperparameter_tuning <- function (
   criterion_grid <- vec_to_list(criterion_grid)
   optimizer_grid <- vec_to_list(optimizer_grid)
   for (i in 1:length(optimizer_parameters_grid)) {
-    optimizer_parameters_grid[i] <- list_to_dict(optimizer_parameters_grid[i])
+    optimizer_parameters_grid[i] <-
+      list_to_dict(optimizer_parameters_grid[i])
   }
-  optimizer_parameters_grid <- vec_to_list(optimizer_parameters_grid)
+  optimizer_parameters_grid <-
+    vec_to_list(optimizer_parameters_grid)
   
   py_run_string(
     str_interp(
@@ -461,31 +467,29 @@ hyperparameter_tuning <- function (
 #'
 #' @export
 
-select_model <- function (
-  data,
-  target_variable,
-  n_models = 1,
-  n_timesteps_grid = c(6, 12),
-  fill_na_func_grid = c("mean"),
-  fill_ragged_edges_func_grid = c("mean"),
-  train_episodes_grid = c(50, 100, 200),
-  batch_size_grid = c(30, 100, 200),
-  decay_grid = c(0.98),
-  n_hidden_grid = c(10, 20, 40),
-  n_layers_grid = c(1, 2, 4),
-  dropout_grid = c(0),
-  criterion_grid = c("''"),
-  optimizer_grid = c("''"),
-  optimizer_parameters_grid = c(list("lr"=1e-2)),
-  n_folds = 1,
-  init_test_size = 0.2,
-  pub_lags = c(),
-  lags = c(),
-  performance_metric = "RMSE",
-  alpha=0.0,
-  initial_ordering="feature_contribution",
-  quiet = FALSE
-) {
+select_model <- function (data,
+                          target_variable,
+                          n_models = 1,
+                          n_timesteps_grid = c(6, 12),
+                          fill_na_func_grid = c("mean"),
+                          fill_ragged_edges_func_grid = c("mean"),
+                          train_episodes_grid = c(50, 100, 200),
+                          batch_size_grid = c(30, 100, 200),
+                          decay_grid = c(0.98),
+                          n_hidden_grid = c(10, 20, 40),
+                          n_layers_grid = c(1, 2, 4),
+                          dropout_grid = c(0),
+                          criterion_grid = c("''"),
+                          optimizer_grid = c("''"),
+                          optimizer_parameters_grid = c(list("lr" = 1e-2)),
+                          n_folds = 1,
+                          init_test_size = 0.2,
+                          pub_lags = c(),
+                          lags = c(),
+                          performance_metric = "RMSE",
+                          alpha = 0.0,
+                          initial_ordering = "feature_contribution",
+                          quiet = FALSE) {
   format_dataframe(data)
   # NA and ragged edges filling
   fill_switch <- function (x) {
@@ -512,7 +516,9 @@ select_model <- function (
   
   # converting R named list to python Dict
   list_to_dict <- function (my_list) {
-    return (paste0("{", paste(paste0("'", names(my_list), "':", my_list), collapse=","), "}"))
+    return (paste0("{", paste(
+      paste0("'", names(my_list), "':", my_list), collapse = ","
+    ), "}"))
   }
   
   # converting R vector to python list
@@ -536,9 +542,11 @@ select_model <- function (
   }
   fill_na_func_grid <- vec_to_list(fill_na_func_grid)
   for (i in 1:length(fill_ragged_edges_func_grid)) {
-    fill_ragged_edges_func_grid[i] <- fill_switch(fill_ragged_edges_func_grid[i])
+    fill_ragged_edges_func_grid[i] <-
+      fill_switch(fill_ragged_edges_func_grid[i])
   }
-  fill_ragged_edges_func_grid <- vec_to_list(fill_ragged_edges_func_grid)
+  fill_ragged_edges_func_grid <-
+    vec_to_list(fill_ragged_edges_func_grid)
   train_episodes_grid <- vec_to_list(train_episodes_grid)
   batch_size_grid <- vec_to_list(batch_size_grid)
   decay_grid <- vec_to_list(decay_grid)
@@ -548,9 +556,11 @@ select_model <- function (
   criterion_grid <- vec_to_list(criterion_grid)
   optimizer_grid <- vec_to_list(optimizer_grid)
   for (i in 1:length(optimizer_parameters_grid)) {
-    optimizer_parameters_grid[i] <- list_to_dict(optimizer_parameters_grid[i])
+    optimizer_parameters_grid[i] <-
+      list_to_dict(optimizer_parameters_grid[i])
   }
-  optimizer_parameters_grid <- vec_to_list(optimizer_parameters_grid)
+  optimizer_parameters_grid <-
+    vec_to_list(optimizer_parameters_grid)
   
   py_run_string(
     str_interp(
@@ -560,3 +570,66 @@ select_model <- function (
   
   return (py$tmp1)
 }
+
+#' @title Get predictions plus uncertainty intervals on a new dataset
+#' @description Get predictions plus uncertainty intervals on a new dataset
+#' @param model a trained LSTM model gotten from calling LSTM()
+#' @param data dataframe with the same columns the model was trained on
+#' @param interval number between 0 and 1, uncertainty interval. A closer number to one gives a higher uncertainty interval. E.g., 0.95 (95%) will give larger bands than 0.5 (50%)
+#' @param only_actuals_obs whether or not to produce predictions for periods without an actual. E.g. FALSE will return predictions for months in between quarters, even if the target variable is quarterly.
+#' @param start_date string in "YYYY-MM-DD" format, start date of generating predictions. To save calculation time, i.e. just calculating after testing date instead of all dates
+#' @param end_date string in "YYYY-MM-DD" format, end date of generating predictions
+#' @return dataframe with periods, actuals if available, point predictions, lower and upper uncertainty intervals
+#'
+#' @export
+
+interval_predict <-
+  function (model,
+            data,
+            interval = 0.95,
+            only_actuals_obs = FALSE,
+            start_date = NULL,
+            end_date = NULL) {
+    date_col <- colnames(data[sapply(data, class) == "Date"])[1]
+    format_dataframe(data)
+    preds <-
+      model$interval_predict(tmp_df, interval, only_actuals_obs, start_date, end_date)
+    preds <- data.frame(preds)
+    preds[, date_col] <- as.Date(preds[, date_col])
+    return (preds)
+  }
+
+#' @title Get predictions plus uncertainty intervals on artificial vintages
+#' @description Get predictions plus uncertainty intervals on artificial vintages
+#' @param model a trained LSTM model gotten from calling LSTM()
+#' @param pub_lags list of integers, list of periods back each input variable is set to missing. I.e. publication lag of the variable.
+#' @param lag integer, simulated periods back. E.g. -2 = simulating data as it would have been 2 months before target period, 1 = 1 month after, etc.
+#' @param data dataframe with the same columns the model was trained on
+#' @param interval number between 0 and 1, uncertainty interval. A closer number to one gives a higher uncertainty interval. E.g., 0.95 (95%) will give larger bands than 0.5 (50%)
+#' @param start_date string in "YYYY-MM-DD" format, start date of generating predictions. To save calculation time, i.e. just calculating after testing date instead of all dates
+#' @param end_date string in "YYYY-MM-DD" format, end date of generating predictions
+#' @return dataframe with periods, actuals if available, point predictions, lower and upper uncertainty intervals
+#'
+#' @export
+
+ragged_interval_predict <-
+  function (model,
+            pub_lags,
+            lag,
+            data,
+            interval = 0.95,
+            start_date = NULL,
+            end_date = NULL) {
+    date_col <- colnames(data[sapply(data, class) == "Date"])[1]
+    format_dataframe(data)
+    preds <-
+      model$ragged_interval_predict(as.integer(pub_lags),
+                                    as.integer(lag),
+                                    tmp_df,
+                                    interval,
+                                    start_date,
+                                    end_date)
+    preds <- data.frame(preds)
+    preds[, date_col] <- as.Date(preds[, date_col])
+    return (preds)
+  }

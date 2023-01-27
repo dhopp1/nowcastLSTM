@@ -579,6 +579,7 @@ select_model <- function (data,
 #' @param only_actuals_obs whether or not to produce predictions for periods without an actual. E.g. FALSE will return predictions for months in between quarters, even if the target variable is quarterly.
 #' @param start_date string in "YYYY-MM-DD" format, start date of generating predictions. To save calculation time, i.e. just calculating after testing date instead of all dates
 #' @param end_date string in "YYYY-MM-DD" format, end date of generating predictions
+#' @param data_availability_weight_scheme string, weighting scheme for data avilability. "fc" for weighting variables by feature contribution, "equal" for weighting each equally.
 #' @return dataframe with periods, actuals if available, point predictions, lower and upper uncertainty intervals
 #'
 #' @export
@@ -589,11 +590,19 @@ interval_predict <-
             interval = 0.95,
             only_actuals_obs = FALSE,
             start_date = NULL,
-            end_date = NULL) {
+            end_date = NULL,
+            data_availability_weight_scheme = "fc") {
     date_col <- colnames(data[sapply(data, class) == "Date"])[1]
     format_dataframe(data)
     preds <-
-      model$interval_predict(tmp_df, interval, only_actuals_obs, start_date, end_date)
+      model$interval_predict(
+        tmp_df,
+        interval,
+        only_actuals_obs,
+        start_date,
+        end_date,
+        data_availability_weight_scheme
+      )
     preds <- data.frame(preds)
     preds[, date_col] <- as.Date(preds[, date_col])
     return (preds)
@@ -608,6 +617,7 @@ interval_predict <-
 #' @param interval number between 0 and 1, uncertainty interval. A closer number to one gives a higher uncertainty interval. E.g., 0.95 (95%) will give larger bands than 0.5 (50%)
 #' @param start_date string in "YYYY-MM-DD" format, start date of generating predictions. To save calculation time, i.e. just calculating after testing date instead of all dates
 #' @param end_date string in "YYYY-MM-DD" format, end date of generating predictions
+#' @param data_availability_weight_scheme string, weighting scheme for data avilability. "fc" for weighting variables by feature contribution, "equal" for weighting each equally.
 #' @return dataframe with periods, actuals if available, point predictions, lower and upper uncertainty intervals
 #'
 #' @export
@@ -619,16 +629,20 @@ ragged_interval_predict <-
             data,
             interval = 0.95,
             start_date = NULL,
-            end_date = NULL) {
+            end_date = NULL
+            data_availability_weight_scheme = "fc") {
     date_col <- colnames(data[sapply(data, class) == "Date"])[1]
     format_dataframe(data)
     preds <-
-      model$ragged_interval_predict(as.integer(pub_lags),
-                                    as.integer(lag),
-                                    tmp_df,
-                                    interval,
-                                    start_date,
-                                    end_date)
+      model$ragged_interval_predict(
+        as.integer(pub_lags),
+        as.integer(lag),
+        tmp_df,
+        interval,
+        start_date,
+        end_date,
+        data_availability_weight_scheme
+      )
     preds <- data.frame(preds)
     preds[, date_col] <- as.Date(preds[, date_col])
     return (preds)

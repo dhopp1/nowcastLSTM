@@ -629,7 +629,7 @@ ragged_interval_predict <-
             data,
             interval = 0.95,
             start_date = NULL,
-            end_date = NULL
+            end_date = NULL,
             data_availability_weight_scheme = "fc") {
     date_col <- colnames(data[sapply(data, class) == "Date"])[1]
     format_dataframe(data)

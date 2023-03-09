@@ -1,3 +1,4 @@
+
 # nowcastLSTM
 
 **New in v0.2.2**: ability to get uncertainty intervals for predictions and predictions on synthetic vintages.
@@ -7,7 +8,7 @@
 R wrapper for [nowcast_lstm](https://github.com/dhopp1/nowcast_lstm) Python library. [MATLAB](https://github.com/dhopp1/nowcast_lstm_matlab) and [Julia](https://github.com/dhopp1/NowcastLSTM.jl) wrappers also exist. Long short-term memory neural networks for economic nowcasting. More background in [this](https://www.researchgate.net/publication/363509881_Economic_Nowcasting_with_Long_Short-Term_Memory_Artificial_Neural_Networks_LSTM) paper in the Journal of Official Statistics.
 
 # Installation and set up
-**Installing the library**: Install devtools with `install.packages("devtools")`. Then, from R, run: `devtools::install_github("dhopp1/nowcastLSTM")`. If you get errors about packages being built on different versions of R, try running `Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")`, then run the install command again.
+**Installing the library**: Install devtools with `install.packages("devtools")`. Then, from R, run: `devtools::install_github("dhopp1/nowcastLSTM")`. If you get errors about packages being built on different versions of R, try running `Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")`, then run the install command again. **Note on updating the library**: This R wrapper is not versioned. When there is a new version of library, update the Python library by running `pip install nowcast-lstm==0.2.3` (substitute `0.2.3` with whatever the latest version is) from the command line, then from R rerun `devtools::install_github("dhopp1/nowcastLSTM")`. This should give you access to the latest functionality in R.
 <br><br>
 **Installing Python**: If you already have Python installed on your system, simply follow the install instructions from the [nowcast_lstm Python library](https://github.com/dhopp1/nowcast_lstm) and point `initialize_session` to the path where your Python is installed later on.
 <br><br>

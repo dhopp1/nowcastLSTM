@@ -325,7 +325,7 @@ variable_selection <- function (data,
   
   py_run_string(
     str_interp(
-      "tmp1, tmp2 = variable_selection(data=r.tmp_df, target_variable='${target_variable}', n_timesteps=${n_timesteps}, fill_na_func=${fill_na_func}, fill_ragged_edges_func=${fill_ragged_edges_func}, n_models=${n_models}, train_episodes=${train_episodes}, batch_size=${batch_size}, decay=${decay}, n_hidden=${n_hidden}, n_layers=${n_layers}, dropout=${dropout}, criterion=${criterion}, optimizer=${optimizer}, optimizer_parameters=${optimizer_parameters_dict}, n_folds=${n_folds}, init_test_size=${init_test_size}, pub_lags=${pub_lags}, lags=${lags}, performance_metric=${performance_metric}, alpha=${alpha}, initial_ordering=${initial_ordering}, quiet=${quiet})"
+      "tmp1, tmp2 = variable_selection(data=r.tmp_df, target_variable='${target_variable}', n_timesteps=${n_timesteps}, fill_na_func=${fill_na_func}, fill_ragged_edges_func=${fill_ragged_edges_func}, n_models=${n_models}, train_episodes=${train_episodes}, batch_size=${batch_size}, decay=${decay}, n_hidden=${n_hidden}, n_layers=${n_layers}, dropout=${dropout}, criterion=${criterion}, optimizer=${optimizer}, optimizer_parameters=${optimizer_parameters_dict}, n_folds=${n_folds}, init_test_size=${init_test_size}, pub_lags=${pub_lags}, lags=${lags}, performance_metric=${performance_metric}, alpha=${alpha}, initial_ordering='${initial_ordering}', quiet=${quiet})"
     )
   )
   

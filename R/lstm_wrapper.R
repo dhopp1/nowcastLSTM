@@ -564,7 +564,7 @@ select_model <- function (data,
   
   py_run_string(
     str_interp(
-      "tmp1 = select_model(data=r.tmp_df, target_variable='${target_variable}', n_timesteps_grid=${n_timesteps_grid}, fill_na_func_grid=${fill_na_func_grid}, fill_ragged_edges_func_grid=${fill_ragged_edges_func_grid}, n_models=${n_models}, train_episodes_grid=${train_episodes_grid}, batch_size_grid=${batch_size_grid}, decay_grid=${decay_grid}, n_hidden_grid=${n_hidden_grid}, n_layers_grid=${n_layers_grid}, dropout_grid=${dropout_grid}, criterion_grid=${criterion_grid}, optimizer_grid=${optimizer_grid}, optimizer_parameters_grid=${optimizer_parameters_grid}, n_folds=${n_folds}, init_test_size=${init_test_size}, pub_lags=${pub_lags}, lags=${lags}, performance_metric=${performance_metric}, alpha=${alpha}, initial_ordering=${initial_ordering}, quiet=${quiet})"
+      "tmp1 = select_model(data=r.tmp_df, target_variable='${target_variable}', n_timesteps_grid=${n_timesteps_grid}, fill_na_func_grid=${fill_na_func_grid}, fill_ragged_edges_func_grid=${fill_ragged_edges_func_grid}, n_models=${n_models}, train_episodes_grid=${train_episodes_grid}, batch_size_grid=${batch_size_grid}, decay_grid=${decay_grid}, n_hidden_grid=${n_hidden_grid}, n_layers_grid=${n_layers_grid}, dropout_grid=${dropout_grid}, criterion_grid=${criterion_grid}, optimizer_grid=${optimizer_grid}, optimizer_parameters_grid=${optimizer_parameters_grid}, n_folds=${n_folds}, init_test_size=${init_test_size}, pub_lags=${pub_lags}, lags=${lags}, performance_metric=${performance_metric}, alpha=${alpha}, initial_ordering='${initial_ordering}', quiet=${quiet})"
     )
   )
   

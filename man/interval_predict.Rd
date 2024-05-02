@@ -10,7 +10,8 @@ interval_predict(
   interval = 0.95,
   only_actuals_obs = FALSE,
   start_date = NULL,
-  end_date = NULL
+  end_date = NULL,
+  data_availability_weight_scheme = "fc"
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ interval_predict(
 \item{start_date}{string in "YYYY-MM-DD" format, start date of generating predictions. To save calculation time, i.e. just calculating after testing date instead of all dates}
 
 \item{end_date}{string in "YYYY-MM-DD" format, end date of generating predictions}
+
+\item{data_availability_weight_scheme}{string, weighting scheme for data avilability. "fc" for weighting variables by feature contribution, "equal" for weighting each equally.}
 }
 \value{
 dataframe with periods, actuals if available, point predictions, lower and upper uncertainty intervals

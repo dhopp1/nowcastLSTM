@@ -53,6 +53,7 @@ format_dataframe <- function (dataframe, df_name = "tmp_df") {
 #' @param criterion torch loss criterion, defaults to MAE. For E.g. MSE, pass "torch.nn.MSELoss()"
 #' @param optimizer torch optimizer, defaults to Adam. For a different one, pass e.g. "torch.optim.SGD"
 #' @param optimizer_parameters parameters for optimizer, including learning rate. Pass as a named list, e.g. list("lr"=0.01, "weight_decay"=0.001)
+#' @param seeds c(int), list of integers, what to seed the initial weights for reproducibility. Must be list of same length as n_models parameter
 #' @param python_model_name what the model will be called in the python session. Relevant if more than one model is being trained for simultaneous use. For clarity, should be the same as the name of the R object the model is being saved to.
 #' @return trained LSTM model
 #'
@@ -74,6 +75,7 @@ LSTM <-
             criterion = "''",
             optimizer = "''",
             optimizer_parameters = list("lr" = 1e-2),
+            seeds = c(),
             python_model_name = "model") {
     format_dataframe(data)
     # NA and ragged edges filling
@@ -97,9 +99,24 @@ LSTM <-
     }
     optimizer_parameters_dict <- list_to_dict(optimizer_parameters)
     
+    # converting R seed list to Python
+    vec_to_list <- function (my_vec) {
+      if (purrr::is_empty(my_vec)) {
+        return ("[]")
+      } else {
+        final_string = "["
+        for (i in my_vec) {
+          final_string <- paste0(final_string, i, ",")
+        }
+        final_string <- paste0(final_string, "]")
+        return (final_string)
+      }
+    }
+    seeds <- vec_to_list(seeds)
+    
     py_run_string(
       str_interp(
-        "${python_model_name} = LSTM(data=r.tmp_df, target_variable='${target_variable}', n_timesteps=${n_timesteps}, fill_na_func=${fill_na_func}, fill_ragged_edges_func=${fill_ragged_edges_func}, n_models=${n_models}, train_episodes=${train_episodes}, batch_size=${batch_size}, decay=${decay}, n_hidden=${n_hidden}, n_layers=${n_layers}, dropout=${dropout}, criterion=${criterion}, optimizer=${optimizer}, optimizer_parameters=${optimizer_parameters_dict})"
+        "${python_model_name} = LSTM(data=r.tmp_df, target_variable='${target_variable}', n_timesteps=${n_timesteps}, fill_na_func=${fill_na_func}, fill_ragged_edges_func=${fill_ragged_edges_func}, n_models=${n_models}, train_episodes=${train_episodes}, batch_size=${batch_size}, decay=${decay}, n_hidden=${n_hidden}, n_layers=${n_layers}, dropout=${dropout}, criterion=${criterion}, optimizer=${optimizer}, optimizer_parameters=${optimizer_parameters_dict}, seeds=${seeds})"
       )
     )
     py_run_string(str_interp("${python_model_name}.train(quiet=True)"))
@@ -309,7 +326,7 @@ variable_selection <- function (data,
   
   # converting R vector to python list
   vec_to_list <- function (my_vec) {
-    if (is_empty(my_vec)) {
+    if (purrr::is_empty(my_vec)) {
       return ("[]")
     } else {
       final_string = "["
@@ -401,7 +418,7 @@ hyperparameter_tuning <- function (data,
   
   # converting R vector to python list
   vec_to_list <- function (my_vec) {
-    if (is_empty(my_vec)) {
+    if (purrr::is_empty(my_vec)) {
       return ("[]")
     } else {
       final_string = "["
@@ -523,7 +540,7 @@ select_model <- function (data,
   
   # converting R vector to python list
   vec_to_list <- function (my_vec) {
-    if (is_empty(my_vec)) {
+    if (purrr::is_empty(my_vec)) {
       return ("[]")
     } else {
       final_string = "["
@@ -564,7 +581,7 @@ select_model <- function (data,
   
   py_run_string(
     str_interp(
-      "tmp1 = select_model(data=r.tmp_df, target_variable='${target_variable}', n_timesteps_grid=${n_timesteps_grid}, fill_na_func_grid=${fill_na_func_grid}, fill_ragged_edges_func_grid=${fill_ragged_edges_func_grid}, n_models=${n_models}, train_episodes_grid=${train_episodes_grid}, batch_size_grid=${batch_size_grid}, decay_grid=${decay_grid}, n_hidden_grid=${n_hidden_grid}, n_layers_grid=${n_layers_grid}, dropout_grid=${dropout_grid}, criterion_grid=${criterion_grid}, optimizer_grid=${optimizer_grid}, optimizer_parameters_grid=${optimizer_parameters_grid}, n_folds=${n_folds}, init_test_size=${init_test_size}, pub_lags=${pub_lags}, lags=${lags}, performance_metric=${performance_metric}, alpha=${alpha}, initial_ordering='${initial_ordering}', quiet=${quiet})"
+      "tmp1 = select_model(data=r.tmp_df, target_variable='${target_variable}', n_timesteps_grid=${n_timesteps_grid}, fill_na_func_grid=${fill_na_func_grid}, fill_ragged_edges_func_grid=${fill_ragged_edges_func_grid}, n_models=${n_models}, train_episodes_grid=${train_episodes_grid}, batch_size_grid=${batch_size_grid}, decay_grid=${decay_grid}, n_hidden_grid=${n_hidden_grid}, n_layers_grid=${n_layers_grid}, dropout_grid=${dropout_grid}, criterion_grid=${criterion_grid}, optimizer_grid=${optimizer_grid}, optimizer_parameters_grid=${optimizer_parameters_grid}, n_folds=${n_folds}, init_test_size=${init_test_size}, pub_lags=${pub_lags}, lags=${lags}, performance_metric=${performance_metric}, alpha=${alpha}, initial_ordering=${initial_ordering}, quiet=${quiet})"
     )
   )
   

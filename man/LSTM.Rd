@@ -20,6 +20,7 @@ LSTM(
   criterion = "''",
   optimizer = "''",
   optimizer_parameters = list(lr = 0.01),
+  seeds = c(),
   python_model_name = "model"
 )
 }
@@ -53,6 +54,8 @@ LSTM(
 \item{optimizer}{torch optimizer, defaults to Adam. For a different one, pass e.g. "torch.optim.SGD"}
 
 \item{optimizer_parameters}{parameters for optimizer, including learning rate. Pass as a named list, e.g. list("lr"=0.01, "weight_decay"=0.001)}
+
+\item{seeds}{c(int), list of integers, what to seed the initial weights for reproducibility. Must be list of same length as n_models parameter}
 
 \item{python_model_name}{what the model will be called in the python session. Relevant if more than one model is being trained for simultaneous use. For clarity, should be the same as the name of the R object the model is being saved to.}
 }

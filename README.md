@@ -56,6 +56,8 @@ initialize_session()
 # this command will instantiate and train an LSTM network
 # due to quirks with using Python from R, the python_model_name argument should be set to the same name used for the R object it is assigned to.
 model <- LSTM(data, "target_col_name", n_timesteps=12, python_model_name = "model") # default parameters with 12 timestep history
+#model <- LSTM(data, "target_col_name", n_timesteps=12, n_models=10, seeds=c(1:10), python_model_name = "model") # For reproducibility on a single machine/system, give a list of manual seeds as long as the n_models parameter. Reproducibility across machines is not guaranteed.
+
 
 predict(model, data) # predictions on the training set
 
